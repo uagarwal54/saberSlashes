@@ -1,0 +1,31 @@
+syntax="proto3";
+
+// The go files generated will be stored in this path
+option go_package="./proto";
+
+package greet_service;
+
+service GreetService{
+    rpc SayHello(NoParams) returns (HelloResponse); // uniary 
+    rpc SayHelloServerSideStreaming(NameList) returns (stream HelloResponse); // This is for the scenario where the client sends a message and the server sends back a stream
+    rpc SayHelloClientSideStreaming(stream HelloRequest) returns (MessagesList); // This is for the scenario where the client sends a stream and the server sends back a simple response
+    rpc SayHelloBiDirectionalStreaming(stream HelloRequest) returns (stream HelloResponse); // This is for the scenario where both the client and the server sends a stream of data back and forth
+}
+
+message NoParams{};
+
+message HelloRequest{
+    string name = 1;
+}
+
+message HelloResponse{
+    string message = 1;
+};
+
+message NameList{
+    repeated string names = 1;
+}
+
+message MessagesList{
+    repeated string messages = 1;
+}

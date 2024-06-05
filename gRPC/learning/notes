@@ -1,0 +1,13 @@
+-> Protoc installation
+        sudo apt-get update
+        export PB_REL="https://github.com/protocolbuffers/protobuf/releases"
+        curl -LO $PB_REL/download/v25.1/protoc-25.1-linux-x86_64.zip
+        unzip protoc-25.1-linux-x86_64.zip -d $HOME/.local
+        sudo apt install unzip
+        unzip protoc-25.1-linux-x86_64.zip -d $HOME/.local
+        echo "export PATH="$PATH:$HOME/.local/bin"" >> ~/.bashrc
+
+-> To autogenerate the go protobuf files:
+        1. Naviagate to the root dir of the project
+        2. Run the command:  protoc --go_out=. --go-grpc_out=. proto/greet.proto
+        This will create the go_out and the go_grpc_out files

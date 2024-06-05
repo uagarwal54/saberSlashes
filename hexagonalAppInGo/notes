@@ -1,0 +1,33 @@
+-> In hexagonal coding paradigm we design the application in such a way that each component of the app maintains it's own
+    concerns and goals, making the app extremly modular.
+
+-> In the diagram stored in the file roughSketch.png kept in this folder it is clear that the core logic of the app and the 
+    other peripherals are kept separate and only the outer layer i.e the ports and adapters layer interacts with the outside
+    world.
+
+-> Some Guidelines:
+    1. We keep our business logic independent of any large framework. So if the framework is to become deprecated 
+        or we want to use a different framework we can just take our business logic and use it with the framework.
+        So we need to write only more ports and adapters to use the new framework and the business logic remians untouched.
+    
+    2. We need to make sure that our business logic is testable even without the ports and adapters i.e even without
+        a db or API our main logic or the business logic should be testable.
+
+    3. The business logic should not know anything about the outside world.
+
+-> The whole point is to make the app completly agnostic to any thing from the outside world. 
+
+-> The file structure that we are following in this app allows us to setup different ways for our application
+    to run. Like in the pkg folder we have the http package (custom) and by running our application through that package 
+    we make our app run as a hosted service. 
+    Similarly we can have another package in pkg which runs our app as a CLI service by running our app though 
+    that particular package. Even inside the http package we have a folder "rest" so if tommorow we want our application
+    to run as a SOAP service or as a GraphQL service we can just have them setup inside the http package and make our 
+    application run as a SOAP service or anyother service for that matter.
+
+-> The file structure descibed above is also part of the hexagonal architecture. 
+
+Note: While using go mod we dont need mod files for all the nested modules. Just one mod file at the root location and
+        then import the nested modules using the module name used while initializaion. Like while initializing this project
+        I used "hexagonalAppInGo" so now to import any of the nested modules I use hexagonalAppInGo/<Path to the module>
+ 
