@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
+	"redis_from_scratch/client"
+	"time"
 )
 
 // start from 33.13
@@ -55,7 +58,7 @@ func (s *Server) loop() {
 		select {
 		case rawMsg := <-s.msgCh: // rawMsg has the message bytes sent by the peer
 			if err := s.handleRawMsg(rawMsg); err != nil {
-				log.Fatal("Error while processing the raw mwssage: ", err)
+				log.Print("Error while processing the raw mwssage: ", err)
 			}
 		case peer := <-s.addPeerCh:
 			s.peers[peer] = true
@@ -66,7 +69,15 @@ func (s *Server) loop() {
 }
 
 func (s *Server) handleRawMsg(rawMsg []byte) error {
-	fmt.Println(string(rawMsg))
+	cmd, err := parseCommand(string(rawMsg))
+	if err != nil {
+		return err
+	}
+	// Doing v := cmd.(type) will create v with whatever the underlying type of the cmd is, since cmd is an interface so it will be of various command types of redis
+	switch v := cmd.(type) {
+	case SetCommand:
+		fmt.Printf("Somebody wants to set the key: %s in the has table with the value: %s\n", v.key, v.value)
+	}
 	return nil
 }
 
@@ -91,6 +102,20 @@ func (s *Server) handleConn(conn net.Conn) {
 }
 
 func main() {
-	server := NewServer(Config{})
-	log.Fatal(server.Start())
+	go func() {
+		server := NewServer(Config{})
+		log.Fatal(server.Start())
+	}()
+	time.Sleep(1 * time.Second)
+	c := client.NewClient("localhost:5001")
+
+	/* The diff between context.Background() and context.TODO() is nothing as both return context.emptyCtx which is an empty struct.
+	The only diff that can be seen is that the context.Background() will return context.backgroundCtx struct which inherits context.emptyCtx and hence is an empty struct. context.backgroundCtx implements
+	the string interface which returns "context.Background" as string
+	whereas context.TODO() will return context.todoCtx struct which inherits context.emptyCtx and hence is an empty struct. context.todoCtx implements the string interface which returns "context.TODO" as string
+	*/
+	if err := c.Set(context.Background(), "foo", "bar"); err != nil {
+		log.Fatal("Error: ", err)
+	}
+	select {} // We are blocking so that the program does not exit!
 }
