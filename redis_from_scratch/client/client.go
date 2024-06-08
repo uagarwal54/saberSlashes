@@ -23,8 +23,8 @@ func (c *Client) Set(ctx context.Context, key, val string) error {
 	if err != nil {
 		return err
 	}
-	var buf bytes.Buffer
-	wr := resp.NewWriter(&buf)
+	buf := &bytes.Buffer{}
+	wr := resp.NewWriter(buf)
 	wr.WriteArray(
 		[]resp.Value{resp.StringValue("SET"),
 			resp.StringValue(key),
@@ -32,4 +32,24 @@ func (c *Client) Set(ctx context.Context, key, val string) error {
 	)
 	_, err = conn.Write(buf.Bytes())
 	return err
+}
+
+func (c *Client) Get(ctx context.Context, key string) (string, error) {
+	conn, err := net.Dial("tcp", c.addr)
+	if err != nil {
+		return "", err
+	}
+	buf := &bytes.Buffer{}
+	wr := resp.NewWriter(buf)
+	wr.WriteArray(
+		[]resp.Value{resp.StringValue("GET"),
+			resp.StringValue(key),
+		})
+	_, err = conn.Write(buf.Bytes())
+	if err != nil {
+		return "", err
+	}
+	returnBuf := make([]byte, 1024)
+	n, err := conn.Read(returnBuf)
+	return string(returnBuf[:n]), err
 }
