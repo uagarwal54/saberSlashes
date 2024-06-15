@@ -1,0 +1,22 @@
+-> Run the docker-compose file to setup mongo db
+-> socket.io is a transport protocol that enables real-time, bidirectioanl, event based communication.
+-> flask-socketio is the lib that provides the integration between flask and socket.io
+-> flask-socketio uses some asynchronous services, either eventlet or gevent, these are networking libs written in python. We will use 
+
+
+-> Flow of events:
+        Join Room 
+Server <---------------------- Client
+        Join_Room_announcement
+Server ----------------------> Client
+        Send_Message
+Server <---------------------- Client
+        Revieve_Message
+Server ----------------------> Client
+        Leave_room
+Server <---------------------- Client
+        Leave_room_announcement
+Server ----------------------> Client
+
+-> Use the following command to install all the packages from requirements.txt
+ pip3 install -r requirements.txt
