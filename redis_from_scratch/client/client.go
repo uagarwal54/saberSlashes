@@ -18,7 +18,7 @@ func NewClient(address string) *Client {
 	}
 }
 
-func (c *Client) Set(ctx context.Context, key, val string) error {
+func (c *Client) Set(_ context.Context, key, val string) error {
 	conn, err := net.Dial("tcp", c.addr)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (c *Client) Set(ctx context.Context, key, val string) error {
 	return err
 }
 
-func (c *Client) Get(ctx context.Context, key string) (string, error) {
+func (c *Client) Get(_ context.Context, key string) (string, error) {
 	conn, err := net.Dial("tcp", c.addr)
 	if err != nil {
 		return "", err

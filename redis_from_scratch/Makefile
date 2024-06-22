@@ -1,5 +1,8 @@
 run: build
 	@./goredis
 
-build:
+build: clean
 	@go build -o goredis
+
+clean:
+	@rm -rf goredis

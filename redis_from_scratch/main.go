@@ -64,7 +64,7 @@ func (s *Server) startServerLoop() {
 		select {
 		case msg := <-s.msgCh: // rawMsg has the message bytes sent by the peer
 			if err := s.handleMsg(msg); err != nil {
-				log.Print("Error while processing the raw mwssage: ", err)
+				log.Print("Error while processing the raw message: ", err)
 			}
 		case peer := <-s.addPeerCh:
 			s.peers[peer] = true
@@ -124,7 +124,7 @@ func main() {
 	time.Sleep(1 * time.Second)
 
 	c := client.NewClient("localhost:5001")
-	for i := 1; i < 10; i++ {
+	for i := range 10 {
 		/* The diff between context.Background() and context.TODO() is nothing as both return context.emptyCtx which is an empty struct.
 		The only diff that can be seen is that the context.Background() will return context.backgroundCtx struct which inherits context.emptyCtx and hence is an empty struct. context.backgroundCtx implements
 		the string interface which returns "context.Background" as string
@@ -133,10 +133,10 @@ func main() {
 		if err := c.Set(context.Background(), fmt.Sprintf("foo_%d", i), fmt.Sprintf("bar_%d", i)); err != nil {
 			log.Fatal("Error: ", err)
 		}
-		if val, err := c.Get(context.Background(), fmt.Sprintf("foo_%d", i)); err != nil {
+		if _, err := c.Get(context.Background(), fmt.Sprintf("foo_%d", i)); err != nil {
 			log.Fatal("Error: ", err)
 		} else {
-			fmt.Println("Value: ", val)
+			// fmt.Println("Value: ", val)
 		}
 	}
 	// fmt.Println(server.kv.data)

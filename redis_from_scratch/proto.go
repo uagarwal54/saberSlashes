@@ -15,12 +15,12 @@ const (
 )
 
 type (
-	Command    interface{}
+	Command    any
 	SetCommand struct {
 		key, value []byte
 	}
 	GetCommand struct {
-		key, value []byte
+		key []byte
 	}
 )
 
