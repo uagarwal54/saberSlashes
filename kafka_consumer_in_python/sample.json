@@ -1,0 +1,16 @@
+{
+    "time": "",
+    "actor":{
+        "id": "",
+        "group": ""
+    },
+    "action":{
+        "type": "CRUD",
+        "status": "success/fail"
+    },
+    "resource":{
+        "id": "",
+        "type": "",
+        "status": "active/inactive" 
+    }
+}
