@@ -7,3 +7,7 @@ class QueryHandler:
     def query_data(self, param):
         query = {"field": param}  # Customize your query based on parameters
         return self.storage.query_data(query)
+    
+    def insert_data(self, param):
+        query = {"field": param}  # Customize your query based on parameters
+        return self.storage.insert_data(query)
