@@ -27,13 +27,12 @@ if __name__ == '__main__':
     
     match STORAGE_STRATEGY:
         case "mongo":
-            MongoStorage.db_name = MONGO_DB
-            MongoStorage.collection_name = MONGO_COLLECTION
-            MongoStorage.uri = MONGO_URI
-            storage = MongoStorage()
+            storage = MongoStorage(MONGO_URI, MONGO_DB,MONGO_COLLECTION)
+            storage.connectToMongo()
         case _:
             print("The defined value for STORAGE_STRATEGY is not supported")
 
     
     service = ConsumerService(ingester, storage)
+    print("Starting ingestor...")
     service.run()

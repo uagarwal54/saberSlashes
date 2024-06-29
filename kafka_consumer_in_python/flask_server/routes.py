@@ -1,10 +1,10 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from query_handler import QueryHandler
 
 routes_blueprint = Blueprint('routes', __name__)
 
 # Route to send JSON data to Kafka
-@routes_blueprint.route('/send_to_kafka', methods=['POST'])
+@routes_blueprint.route('/storeData', methods=['POST'])
 def send_to_kafka():
     try:
         handler = QueryHandler()
@@ -15,11 +15,13 @@ def send_to_kafka():
 
 
 # Route to start consuming data from Kafka and store in MongoDB
-@routes_blueprint.route('/consume_and_store', methods=['GET'])
+@routes_blueprint.route('/getData', methods=['GET'])
 def consume_and_store():
     try:
-        handler = QueryHandler()
-        handler.query_data(request.json)
-        return jsonify({'success': True, 'message': 'Started consuming data from Kafka and storing in MongoDB'})
+        handler = QueryHandler(storage=current_app.config["STORAGE_HANDLER"])
+        data = handler.query_data(request)
+        return jsonify({'success': True, 'message': 'Found the following entries for the search pattern', 'data': data})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+# action.type=crud,actor.id=djkvbwdkjbv
