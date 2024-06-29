@@ -6,6 +6,6 @@ KAFKA_BOOTSTRAP_SERVERS = 'localhost:9093'
 KAFKA_GROUP_ID = "demo"
 
 
-MONGO_URI = "mongodb://root:example@mongo:27017/"
+MONGO_URI = "mongodb://root:example@localhost:27017/"
 MONGO_DB = "consumer_logs"
 MONGO_COLLECTION = "logs"
