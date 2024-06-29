@@ -36,3 +36,4 @@ if __name__ == '__main__':
     service = ConsumerService(ingester, storage)
     print("Starting ingestor...")
     service.run()
+    print("Ingestor Started...")

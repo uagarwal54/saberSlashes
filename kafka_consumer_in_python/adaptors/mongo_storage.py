@@ -16,7 +16,7 @@ class MongoStorage(StorageStrategy):
         self.db = self.client[self.db_name]
         self.collection = self.db[self.collection_name]
         print("Connected to mongo")
-
+        
     def insert_data(self, data: dict):
         self.collection.insert_one(data)
 
@@ -26,3 +26,4 @@ class MongoStorage(StorageStrategy):
         for key in searchParams:
             query[key] = request.args.get(key)
         return list(self.collection.find(query, {'_id': 0}))
+      # We have used {'_id': 0} so that the resulting data will NOT contain the _id field
