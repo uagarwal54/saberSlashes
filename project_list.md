@@ -3,7 +3,7 @@
 ## Short Projects
 
 1. PDF generator in Go using templates.
-2. Flask App with Kafka Data Ingestor for Mongo
+2. Flask App with Kafka Data Ingestor for Mongo: Done
 
 ## Medium Projects
 
