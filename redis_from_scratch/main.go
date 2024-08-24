@@ -24,6 +24,7 @@ type (
 		listener  net.Listener
 		addPeerCh chan *Peer
 		quitCh    chan struct{}
+		delCh     chan *Peer
 		msgCh     chan Message
 		kv        KV
 	}
@@ -102,7 +103,7 @@ func (s *Server) acceptPeerLoop() error {
 }
 
 func (s *Server) handleConn(conn net.Conn) {
-	peer := NewPeer(conn, s.msgCh)
+	peer := NewPeer(conn, s.msgCh, s.delCh)
 	s.addPeerCh <- peer
 	log.Println("New Peer added, remoteAddress: ", conn.RemoteAddr())
 	if err := peer.readLoop(); err != nil {
