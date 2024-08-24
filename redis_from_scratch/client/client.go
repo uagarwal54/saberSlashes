@@ -10,19 +10,21 @@ import (
 
 type Client struct {
 	addr string
+	conn net.Conn
 }
 
-func NewClient(address string) *Client {
+func NewClient(address string) (*Client, error) {
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return nil, err
+	}
 	return &Client{
 		addr: address,
-	}
+		conn: conn,
+	}, nil
 }
 
 func (c *Client) Set(ctx context.Context, key, val string) error {
-	conn, err := net.Dial("tcp", c.addr)
-	if err != nil {
-		return err
-	}
 	buf := &bytes.Buffer{}
 	wr := resp.NewWriter(buf)
 	wr.WriteArray(
@@ -30,26 +32,22 @@ func (c *Client) Set(ctx context.Context, key, val string) error {
 			resp.StringValue(key),
 			resp.StringValue(val)},
 	)
-	_, err = conn.Write(buf.Bytes())
+	_, err := c.conn.Write(buf.Bytes())
 	return err
 }
 
 func (c *Client) Get(ctx context.Context, key string) (string, error) {
-	conn, err := net.Dial("tcp", c.addr)
-	if err != nil {
-		return "", err
-	}
 	buf := &bytes.Buffer{}
 	wr := resp.NewWriter(buf)
 	wr.WriteArray(
 		[]resp.Value{resp.StringValue("GET"),
 			resp.StringValue(key),
 		})
-	_, err = conn.Write(buf.Bytes())
+	_, err := c.conn.Write(buf.Bytes())
 	if err != nil {
 		return "", err
 	}
 	returnBuf := make([]byte, 1024)
-	n, err := conn.Read(returnBuf)
+	n, err := c.conn.Read(returnBuf)
 	return string(returnBuf[:n]), err
 }

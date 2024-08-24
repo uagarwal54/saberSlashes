@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
-	"redis_from_scratch/client"
-	"time"
 )
 
 // start from 33.13
@@ -17,7 +15,7 @@ type (
 		ListenAddress string
 	}
 	Message struct {
-		data []byte
+		cmd  Command
 		peer *Peer
 	}
 	Server struct {
@@ -75,12 +73,8 @@ func (s *Server) startServerLoop() {
 }
 
 func (s *Server) handleMsg(msg Message) error {
-	cmd, err := parseCommand(string(msg.data))
-	if err != nil {
-		return err
-	}
 	// Doing v := cmd.(type) will create v with whatever the underlying type of the cmd is, since cmd is an interface so it will be of various command types of redis
-	switch v := cmd.(type) {
+	switch v := msg.cmd.(type) {
 	case SetCommand:
 		return s.kv.Set(v.key, v.value)
 	case GetCommand:
@@ -88,7 +82,7 @@ func (s *Server) handleMsg(msg Message) error {
 		if !ok {
 			return fmt.Errorf("key not found")
 		}
-		if err = msg.peer.send(val); err != nil {
+		if err := msg.peer.send(val); err != nil {
 			return err
 		}
 	}
@@ -117,30 +111,13 @@ func (s *Server) handleConn(conn net.Conn) {
 }
 
 func main() {
-	server := NewServer(Config{})
+	listenAddr := flag.String("addr", defaultListenAddr, "The address that the server will listen to")
+	flag.Parse()
+	server := NewServer(Config{
+		ListenAddress: *listenAddr,
+	})
 	go func() {
 		log.Fatal(server.Start())
 	}()
-	time.Sleep(1 * time.Second)
-
-	c := client.NewClient("localhost:5001")
-	for i := 1; i < 10; i++ {
-		/* The diff between context.Background() and context.TODO() is nothing as both return context.emptyCtx which is an empty struct.
-		The only diff that can be seen is that the context.Background() will return context.backgroundCtx struct which inherits context.emptyCtx and hence is an empty struct. context.backgroundCtx implements
-		the string interface which returns "context.Background" as string
-		whereas context.TODO() will return context.todoCtx struct which inherits context.emptyCtx and hence is an empty struct. context.todoCtx implements the string interface which returns "context.TODO" as string
-		*/
-		if err := c.Set(context.Background(), fmt.Sprintf("foo_%d", i), fmt.Sprintf("bar_%d", i)); err != nil {
-			log.Fatal("Error: ", err)
-		}
-		if val, err := c.Get(context.Background(), fmt.Sprintf("foo_%d", i)); err != nil {
-			log.Fatal("Error: ", err)
-		} else {
-			fmt.Println("Value: ", val)
-		}
-	}
-	// fmt.Println(server.kv.data)
-	time.Sleep(1 * time.Second)
-
 	select {} // We are blocking so that the program does not exit!
 }
