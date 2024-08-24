@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	redis "github.com/redis/go-redis/v9"
 )
 
 func TestServerWithMultipleClients(t *testing.T) {
@@ -46,4 +48,43 @@ func TestServerWithMultipleClients(t *testing.T) {
 	if len(server.peers) != 0 {
 		log.Fatal("Expected 0 peers but got: ", len(server.peers))
 	}
+}
+
+func TestServerWithRedisClient(t *testing.T) {
+
+	// Create a context for Redis operations
+	var ctx = context.Background()
+
+	// Connect to the Redis server
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:5000", // Redis server address
+		Password: "",               // No password set (default)
+		DB:       0,                // Use default DB
+	})
+	fmt.Println(rdb)
+	fmt.Println("This is working")
+
+	// Set a key-value pair in Redis
+	err := rdb.Set(ctx, "exampleKey", "Hello, Redis!", 0).Err()
+	if err != nil {
+		log.Fatalf("Failed to set key: %v", err)
+	}
+	/*
+		// Get the value for the key from Redis
+		val, err := rdb.Get(ctx, "exampleKey").Result()
+		if err != nil {
+			log.Fatalf("Failed to get key: %v", err)
+		}
+
+		fmt.Println("exampleKey:", val)
+	*/
+}
+
+func TestFooBar(t *testing.T) {
+	in := map[string]string{
+		"first":  "1",
+		"second": "2",
+	}
+	out := respWriteMap(in)
+	fmt.Println(out)
 }

@@ -36,3 +36,20 @@ func TestGetCommand(t *testing.T) {
 	}
 
 }
+
+func TestSetAndGetCommand(t *testing.T) {
+	c, err := NewClient("localhost:5000")
+	if err != nil {
+		log.Fatal("Error while creating client conn: ", err)
+	}
+	defer c.Close()
+	if err := c.Set(context.Background(), "foo", 1); err != nil {
+		log.Fatal("Error: ", err)
+	}
+	if val, err := c.Get(context.Background(), "foo"); err != nil {
+		log.Fatal("Error: ", err)
+	} else {
+		fmt.Println("Value: ", val)
+	}
+
+}

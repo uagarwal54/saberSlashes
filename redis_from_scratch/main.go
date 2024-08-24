@@ -81,9 +81,17 @@ func (s *Server) handleMsg(msg Message) error {
 	case GetCommand:
 		val, ok := s.kv.Get(v.key)
 		if !ok {
-			return fmt.Errorf("key not found")
+			return fmt.Errorf("key %s, not found", v.key)
 		}
 		if err := msg.peer.send(val); err != nil {
+			return err
+		}
+	case HelloCommand:
+		spec := map[string]string{
+			"server": "gredis",
+			"role":   "master",
+		}
+		if err := msg.peer.send(respWriteMap(spec)); err != nil {
 			return err
 		}
 	}

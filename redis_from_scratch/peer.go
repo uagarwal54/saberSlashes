@@ -28,11 +28,16 @@ type (
 	GetCommand struct {
 		key []byte
 	}
+
+	HelloCommand struct {
+		value string
+	}
 )
 
 const (
-	commandSet = "SET"
-	commandGet = "GET"
+	commandSet   = "SET"
+	commandGet   = "GET"
+	commandHello = "hello"
 )
 
 // NewPeer creates the Peer struct that is used top manage the peers in the server
@@ -73,7 +78,6 @@ func (p *Peer) readLoop() error {
 						key:   values.Array()[1].Bytes(),
 						value: values.Array()[2].Bytes(),
 					}
-					p.msgCh <- Message{cmd: cmd, peer: p}
 					// return nil
 				case commandGet:
 					if len(values.Array()) != 2 {
@@ -82,11 +86,15 @@ func (p *Peer) readLoop() error {
 					cmd = GetCommand{
 						key: values.Array()[1].Bytes(),
 					}
-					p.msgCh <- Message{cmd: cmd, peer: p}
 					// return nil
-				default:
+				case commandHello:
+					cmd = HelloCommand{
+						value: values.Array()[1].String(),
+					}
 
+				default:
 				}
+				p.msgCh <- Message{cmd: cmd, peer: p}
 			}
 		}
 	}
