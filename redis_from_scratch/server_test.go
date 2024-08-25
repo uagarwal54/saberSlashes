@@ -69,19 +69,22 @@ func TestServerWithOfficialRedisClient(t *testing.T) {
 	})
 	fmt.Println(rdb)
 	fmt.Println("This is working")
-
+	key := "exampleKey"
+	val := "Hello, Redis!"
 	// Set a key-value pair in Redis
-	err := rdb.Set(ctx, "exampleKey", "Hello, Redis!", 0).Err()
+	err := rdb.Set(ctx, key, val, 0).Err()
 	if err != nil {
 		log.Fatalf("Failed to set key: %v", err)
 	}
 
 	// Get the value for the key from Redis
-	val, err := rdb.Get(ctx, "exampleKey").Result()
+	fetchedVal, err := rdb.Get(ctx, key).Result()
 	if err != nil {
 		log.Fatalf("Failed to get key: %v", err)
 	}
-
+	if fetchedVal != val {
+		t.Fatalf("Expected %s but got %s", val, fetchedVal)
+	}
 	fmt.Println("exampleKey:", val)
 
 }
