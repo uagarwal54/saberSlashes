@@ -69,22 +69,22 @@ func TestServerWithRedisClient(t *testing.T) {
 	if err != nil {
 		log.Fatalf("Failed to set key: %v", err)
 	}
-	/*
-		// Get the value for the key from Redis
-		val, err := rdb.Get(ctx, "exampleKey").Result()
-		if err != nil {
-			log.Fatalf("Failed to get key: %v", err)
-		}
 
-		fmt.Println("exampleKey:", val)
-	*/
+	// Get the value for the key from Redis
+	val, err := rdb.Get(ctx, "exampleKey").Result()
+	if err != nil {
+		log.Fatalf("Failed to get key: %v", err)
+	}
+
+	fmt.Println("exampleKey:", val)
+
 }
 
 func TestFooBar(t *testing.T) {
 	in := map[string]string{
-		"first":  "1",
-		"second": "2",
+		"server":  "redis",
+		"version": "6.0",
 	}
 	out := respWriteMap(in)
-	fmt.Println(out)
+	fmt.Println(string(out))
 }

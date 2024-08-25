@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/tidwall/resp"
 )
 
 // start from 33.13
@@ -76,20 +78,34 @@ func (s *Server) startServerLoop() {
 func (s *Server) handleMsg(msg Message) error {
 	// Doing v := cmd.(type) will create v with whatever the underlying type of the cmd is, since cmd is an interface so it will be of various command types of redis
 	switch v := msg.cmd.(type) {
+	case ClientCommand:
+		if err := resp.NewWriter(msg.peer.conn).WriteString("OK"); err != nil {
+			return err
+		}
 	case SetCommand:
-		return s.kv.Set(v.key, v.value)
+		if err := s.kv.Set(v.key, v.value); err != nil {
+			return err
+		}
+		if err := resp.NewWriter(msg.peer.conn).WriteString("OK"); err != nil {
+			return err
+		}
+
 	case GetCommand:
 		val, ok := s.kv.Get(v.key)
 		if !ok {
 			return fmt.Errorf("key %s, not found", v.key)
 		}
-		if err := msg.peer.send(val); err != nil {
+		if err := resp.NewWriter(msg.peer.conn).WriteString(string(val)); err != nil {
 			return err
 		}
+
 	case HelloCommand:
 		spec := map[string]string{
-			"server": "gredis",
-			"role":   "master",
+			"server":  "redis",
+			"role":    "master",
+			"version": "6.0.0",
+			"proto":   "3",
+			"mode":    "standalone",
 		}
 		if err := msg.peer.send(respWriteMap(spec)); err != nil {
 			return err

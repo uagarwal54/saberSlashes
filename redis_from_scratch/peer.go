@@ -5,8 +5,16 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 
 	"github.com/tidwall/resp"
+)
+
+const (
+	commandSet    = "SET"
+	commandGet    = "GET"
+	commandHello  = "HELLO"
+	commandClient = "CLIENT"
 )
 
 type (
@@ -32,12 +40,10 @@ type (
 	HelloCommand struct {
 		value string
 	}
-)
 
-const (
-	commandSet   = "SET"
-	commandGet   = "GET"
-	commandHello = "hello"
+	ClientCommand struct {
+		value string
+	}
 )
 
 // NewPeer creates the Peer struct that is used top manage the peers in the server
@@ -66,36 +72,51 @@ func (p *Peer) readLoop() error {
 		if err != nil {
 			log.Fatal("Error while reading value: ", err)
 		}
-		var cmd Command
+
 		if values.Type() == resp.Array {
-			for _, val := range values.Array() {
-				switch val.String() {
-				case commandSet:
-					if len(values.Array()) != 3 {
-						return fmt.Errorf("invalid Number of variables for the SET command")
+			rawCmd := values.Array()[0].String()
+			rawCmd = strings.ToUpper(rawCmd)
+			var cmd Command
+			switch rawCmd {
+			case commandClient:
+				cmd = ClientCommand{
+					value: values.Array()[1].String(),
+				}
+
+			case commandGet:
+				if len(values.Array()) != 2 {
+					return fmt.Errorf("invalid Number of variables for the GET command")
+				}
+				cmd = GetCommand{
+					key: values.Array()[1].Bytes(),
+				}
+
+			case commandSet:
+				if len(values.Array()) != 3 {
+					return fmt.Errorf("invalid Number of variables for the SET command")
+				}
+				cmd = SetCommand{
+					key:   values.Array()[1].Bytes(),
+					value: values.Array()[2].Bytes(),
+				}
+
+			case commandHello:
+				// This is the case where we are sending hello from some client which is NOT official redis client
+				if len(values.Array()) == 1 {
+					cmd = HelloCommand{
+						value: values.Array()[0].String(),
 					}
-					cmd = SetCommand{
-						key:   values.Array()[1].Bytes(),
-						value: values.Array()[2].Bytes(),
-					}
-					// return nil
-				case commandGet:
-					if len(values.Array()) != 2 {
-						return fmt.Errorf("invalid Number of variables for the GET command")
-					}
-					cmd = GetCommand{
-						key: values.Array()[1].Bytes(),
-					}
-					// return nil
-				case commandHello:
+
+				} else {
+					// This is handling the hello from the official client
 					cmd = HelloCommand{
 						value: values.Array()[1].String(),
 					}
-
-				default:
 				}
-				p.msgCh <- Message{cmd: cmd, peer: p}
+			default:
+				fmt.Printf("Got unknown command from client => %v\n", rawCmd)
 			}
+			p.msgCh <- Message{cmd: cmd, peer: p}
 		}
 	}
 	return nil
