@@ -50,14 +50,20 @@ func TestServerWithMultipleClients(t *testing.T) {
 	}
 }
 
-func TestServerWithRedisClient(t *testing.T) {
-
+func TestServerWithOfficialRedisClient(t *testing.T) {
+	var server *Server
+	go func() {
+		server = NewServer(Config{})
+		log.Fatal(server.Start())
+	}()
+	fmt.Println("Waiting for the server to start...")
+	time.Sleep(time.Second * 10)
 	// Create a context for Redis operations
 	var ctx = context.Background()
 
 	// Connect to the Redis server
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:5000", // Redis server address
+		Addr:     "localhost:5001", // Redis server address
 		Password: "",               // No password set (default)
 		DB:       0,                // Use default DB
 	})
