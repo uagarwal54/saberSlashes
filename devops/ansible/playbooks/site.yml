@@ -1,0 +1,61 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present # state param defines the desired state of the service, values: defined below
+        update_cache: yes
+    - name: Start NGINX
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+    - name: Create custom index page
+      copy:
+        src: website/
+        dest: /var/www/html/
+        mode: 0644
+        owner: ubuntu
+        group: ubuntu
+
+- hosts: dbservers
+  become: yes
+  tasks:
+    - name: Install MySQL on DB server
+      apt:
+        name: mariadb-server
+        state: present
+        update_cache: yes
+
+    - name: Start MySQL
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+
+#Notes:
+# Values for state param
+  # present: Ensures resource is created or installed
+  # absent: Ensures resource is removed or deleted
+  # latest: Ensures latest version of resource is installed
+  # started: Ensures that the service is running
+  # stopped: Ensures that the service is stopped
+  # restarted: Ensures that the service is restarted
+  # reloaded: Ensures that the service is reloaded without a full restart, ideal for config changes 
+
+# What is the become param?:
+  # become param tells ansible that the tasks need to be performed with elevated privilages like sudo even though you are logged in as a non-root user.
+  # become when set to yes is equivalant to typing sudo with commands
+  # Vales for become:
+    # become: yes :- Enables privilege escalation for the task or play i.e. runs tasks using sudo.
+    # become_user: myuser :- specifies which user to become.
+    # become_method: <Method> :- Specifies method to use for privilage escalation like su or pbrun, default is sudo
+    # become can be used alone but become_user has to be used afte defining become and become_method can only be used after using become and become_user.
+
+# To target a single host just use the name of the host defined in the host file for the value of hosts param
+# like in this case web1 and db1 so for eg: - hosts: db1
+# become can be specified in the task definition individually as well as oposed to the collective implementation done above.
+#
