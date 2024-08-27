@@ -58,4 +58,5 @@
 # To target a single host just use the name of the host defined in the host file for the value of hosts param
 # like in this case web1 and db1 so for eg: - hosts: db1
 # become can be specified in the task definition individually as well as oposed to the collective implementation done above.
-#
+# ansible-playbook -i inventory/hosts playbooks/site.yml
+# Command to run the ansible playbook, it has to be fored from saberSlashes/devops/ansible/ since inventory and playbooks folders are at this path

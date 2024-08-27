@@ -1,0 +1,12 @@
+- We have downloaded and kept the jenkins-cli jar file using
+	wget http://localhost:8080/jnlpJars/jenkins-cli.jar
+
+- Now we will run the command to create and authenticate the admin user:
+	java -jar jenkins-cli.jar -s http://localhost:8080/ -auth @credentials.txt who-am-i
+  credentials.txt has the username:password where the password is the one that jenkins gives us in the file:
+	sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+- plugins cant be installed from cli, so I did it using the UI
+
+- 
+
