@@ -1,0 +1,26 @@
+Networking:
+  - Types:
+	- Bridge: It is the default network and is suitable for stand alone containers
+	  running on the same host, they can communicate with each other using IP addres 
+	  or contianer names
+	  Command: docker network create --driver bridge my-bridge-network
+		   docker run -d --network my-bridge-network -p 34567:8081 my-server
+	
+	- Host Network: When we want the containers to share the host's network stack
+	  It can improve performance but is less issolated.
+	  Command: docker run -d --name my-container --network host my-image
+	
+	- Overlay Network: For multi-host network, especially in Swarm or Kubernetes setups.
+	  command: docker network create --driver overlay my-overlay-network
+	
+	- Macvlan Network: Assign a MAC address to containers for network isolation. Useful for applications that need direct access to the physical network.
+	  command: docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eth0 my-macvlan-network
+
+Multi Stage Builds:
+	- This is done to reduce the size of the final build
+
+
+Note: If we want to see the output of the commands being run from Dockefile we need to run build command as shown below:
+	DOCKER_BUILDKIT=0  docker build --no-cache  -t my-new-server .
+
+		
