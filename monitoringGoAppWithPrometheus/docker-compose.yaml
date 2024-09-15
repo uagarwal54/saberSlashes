@@ -1,0 +1,7 @@
+---
+services:
+  metric-publisher:
+    build: ./metric_publisher
+    ports:
+      - 8080:8080
+      - 8082:8082
