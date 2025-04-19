@@ -1,0 +1,5 @@
+db:
+    - name: supabase
+      conn_string: postgresql://postgres:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhdGF2cmllc3F1dXRibmp2aGRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU0NTg5MzksImV4cCI6MjA1MTAzNDkzOX0.TQ8gkd8FVPTg1Rrqh7H2Gz__ijnccDGvTW6fbnI1mqA@db.latavriesquutbnjvhdi.supabase.co:5432/postgres
+    
+dbinUse: supabase
