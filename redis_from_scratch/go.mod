@@ -1,11 +1,8 @@
 module redis_from_scratch
 
-go 1.22.0
+go 1.23
 
-require (
-	github.com/redis/go-redis/v9 v9.6.1
-	github.com/tidwall/resp v0.1.1
-)
+require github.com/redis/go-redis/v9 v9.6.1
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

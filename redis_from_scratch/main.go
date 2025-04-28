@@ -1,12 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"log/slog"
 	"net"
-
-	"github.com/tidwall/resp"
 )
 
 // start from 33.13
@@ -22,7 +23,7 @@ type (
 	}
 	Server struct {
 		Config
-		peers     map[*Peer]bool
+		peers     map[*Peer]struct{}
 		listener  net.Listener
 		addPeerCh chan *Peer
 		quitCh    chan struct{}
@@ -38,9 +39,10 @@ func NewServer(cfg Config) *Server {
 	}
 	return &Server{
 		Config:    cfg,
-		peers:     make(map[*Peer]bool),
+		peers:     make(map[*Peer]struct{}),
 		addPeerCh: make(chan *Peer),
 		quitCh:    make(chan struct{}),
+		delCh:     make(chan *Peer),
 		msgCh:     make(chan Message),
 		kv:        NewKV(),
 	}
@@ -68,8 +70,11 @@ func (s *Server) startServerLoop() {
 				log.Print("Error while processing the raw mwssage: ", err)
 			}
 		case peer := <-s.addPeerCh:
-			s.peers[peer] = true
+			s.peers[peer] = struct{}{}
+		case peer := <-s.delCh:
+			delete(s.peers, peer)
 		case <-s.quitCh:
+			clear(s.peers)
 			return
 		}
 	}
@@ -79,26 +84,22 @@ func (s *Server) handleMsg(msg Message) error {
 	// Doing v := cmd.(type) will create v with whatever the underlying type of the cmd is, since cmd is an interface so it will be of various command types of redis
 	switch v := msg.cmd.(type) {
 	case ClientCommand:
-		if err := resp.NewWriter(msg.peer.conn).WriteString("OK"); err != nil {
+		if err := msg.peer.send([]byte("OK\n")); err != nil {
 			return err
 		}
 	case SetCommand:
 		if err := s.kv.Set(v.key, v.value); err != nil {
 			return err
 		}
-		if err := resp.NewWriter(msg.peer.conn).WriteString("OK"); err != nil {
-			return err
-		}
-
 	case GetCommand:
 		val, ok := s.kv.Get(v.key)
 		if !ok {
 			return fmt.Errorf("key %s, not found", v.key)
 		}
-		if err := resp.NewWriter(msg.peer.conn).WriteString(string(val)); err != nil {
+
+		if err := msg.peer.send([]byte(val)); err != nil {
 			return err
 		}
-
 	case HelloCommand:
 		spec := map[string]string{
 			"server":  "redis",
@@ -118,7 +119,7 @@ func (s *Server) acceptPeerLoop() error {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			log.Println("Error while accepting the request: ", err)
+			slog.Error("Error while accepting the request", slog.String("error", err.Error()))
 			continue
 		}
 		// Each peer connecting to the server will have an instance of handleConn GoR running for them
@@ -129,9 +130,20 @@ func (s *Server) acceptPeerLoop() error {
 func (s *Server) handleConn(conn net.Conn) {
 	peer := NewPeer(conn, s.msgCh, s.delCh)
 	s.addPeerCh <- peer
-	log.Println("New Peer added, remoteAddress: ", conn.RemoteAddr())
+	slog.Info("New Peer added", slog.String("remote_address", conn.RemoteAddr().String()))
+
+	defer func() {
+		s.delCh <- peer
+		slog.Info("Peer removed", slog.String("remote_address", conn.RemoteAddr().String()))
+	}()
+
 	if err := peer.readLoop(); err != nil {
-		log.Println("Peer action error: err", err.Error()+" remoteAddr", conn.RemoteAddr())
+		if !errors.Is(err, io.EOF) {
+			slog.Error("Peer action error", slog.String("remote_address", conn.RemoteAddr().String()), slog.String("error", err.Error()))
+			return
+		}
+		slog.Warn("Connection was closed by client", slog.String("remote_address", conn.RemoteAddr().String()))
+		return
 	}
 }
 
